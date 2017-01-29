@@ -61,8 +61,8 @@ class TwitterClient: BDBOAuth1SessionManager {
     func homeTimeline(_ countNumber: Int,success: @escaping ([Tweet]) -> ()){
         //?screen_name=twitterapi&count=2
         //statuses/user_timeline.json?screen_name=twitterapi&count=2
-        print("1.1/statuses/home_timeline.json?include_rts=1&count=\(countNumber)")
-        get("1.1/statuses/home_timeline.json?include_rts=1&count=\(countNumber)", parameters: nil, progress: nil, success: { (task: URLSessionDataTask, response: Any?) -> Void in
+        print("1.1/statuses/home_timeline.json?screen_name=taobupt&count=\(countNumber)")
+        get("https://api.twitter.com/1.1/statuses/home_timeline.json?count=\(countNumber)", parameters: nil, progress: nil, success: { (task: URLSessionDataTask, response: Any?) -> Void in
             
             
             let dictionaries=response as! [NSDictionary]
@@ -70,9 +70,7 @@ class TwitterClient: BDBOAuth1SessionManager {
             let tweets=Tweet.tweetsWithArray(dictionaries: dictionaries)
             
             success(tweets)
-//            for tweet in tweets{
-//                print("\(tweet.text)")
-//            }
+            print(dictionaries)
             
         },failure: {(task: URLSessionDataTask?, error: Error) -> Void in
             print(error)

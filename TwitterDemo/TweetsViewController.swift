@@ -73,11 +73,7 @@ class TweetsViewController: UIViewController, UITableViewDataSource, UITableView
     
     func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
         if let tweets = self.tweets {
-            if tweets.count>20{
-                return 20
-            } else{
-                return tweets.count
-            }
+            return tweets.count
         } else {
             return 0
         }
@@ -127,6 +123,7 @@ class TweetsViewController: UIViewController, UITableViewDataSource, UITableView
     
     func loadMoreData(){
         TwitterClient.sharedInstance?.homeTimeline(30,success: {(tweets: [Tweet]) -> () in
+            print("30 tweets")
             self.tweets=tweets
             self.tableView.reloadData()
         })

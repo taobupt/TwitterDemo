@@ -18,14 +18,14 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
         // Override point for customization after application launch.
         
         if User.currentUser != nil{
-            print("there is a current usr")
+            print("there is a current user")
             
             let sotryboard = UIStoryboard(name: "Main", bundle: nil)
             let vc=sotryboard.instantiateViewController(withIdentifier: "TweetsNavigationController")
             window?.rootViewController = vc
             
         } else {
-            print("there is no current usr")
+            print("there is no current user")
         }
         
         NotificationCenter.default.addObserver(forName: NSNotification.Name(rawValue: "UserDidLogout"), object: nil, queue: OperationQueue.main, using: {(NSNotification) -> Void in
