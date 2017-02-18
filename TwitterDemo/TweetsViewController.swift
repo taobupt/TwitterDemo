@@ -8,7 +8,7 @@
 
 import UIKit
 
-class TweetsViewController: UIViewController, UITableViewDataSource, UITableViewDelegate,UIScrollViewDelegate, CustomCellUpdater {
+class TweetsViewController: UIViewController, UITableViewDataSource, UITableViewDelegate,UIScrollViewDelegate {
 
     
     
@@ -17,7 +17,7 @@ class TweetsViewController: UIViewController, UITableViewDataSource, UITableView
     @IBAction func onLogoutButton(_ sender: Any) {
         TwitterClient.sharedInstance?.logout()
     }
-    var tweets: [Tweet]!
+    static var tweets: [Tweet]!
     var isMoreDataLoading=false
     var loadingMoreView:InfiniteScrollActivityView?
     var id1: Int64 = 0
@@ -27,7 +27,7 @@ class TweetsViewController: UIViewController, UITableViewDataSource, UITableView
         super.viewDidLoad()
         tableView.dataSource=self
         tableView.delegate=self
-        
+        self.title="Home"
         
         let frame = CGRect(x: 0, y: tableView.contentSize.height, width: tableView.bounds.size.width, height: InfiniteScrollActivityView.defaultHeight)
         loadingMoreView = InfiniteScrollActivityView(frame: frame)
@@ -59,20 +59,26 @@ class TweetsViewController: UIViewController, UITableViewDataSource, UITableView
         
         
         TwitterClient.sharedInstance?.homeTimeline(success: {(tweets: [Tweet]) -> () in
-            self.tweets=tweets
+            TweetsViewController.tweets = tweets
             self.tableView.reloadData()
         })
         
         // Do any additional setup after loading the view.
     }
 
+    
+    override func viewWillAppear(_ animated: Bool) {
+        super.viewWillAppear(animated)
+        tableView.reloadData()
+        
+    }
     override func didReceiveMemoryWarning() {
         super.didReceiveMemoryWarning()
         // Dispose of any resources that can be recreated.
     }
     
     func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
-        if let tweets = self.tweets {
+        if let tweets = TweetsViewController.tweets {
             return tweets.count
         } else {
             return 0
@@ -81,21 +87,22 @@ class TweetsViewController: UIViewController, UITableViewDataSource, UITableView
     
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
         let cell=tableView.dequeueReusableCell(withIdentifier: "twitterCell", for: indexPath) as! TwitterCell
-        cell.ContextLabel.text = tweets[indexPath.row].text
-        cell.nameLabel.text=tweets[indexPath.row].user?.name
-        cell.timeLabel.text=tweets[indexPath.row].timestamp
-        id1 = tweets[indexPath.row].id1
-        cell.posterImage.setImageWith((tweets[indexPath.row].user?.profileUrl)!)
-        cell.RetweetNumber.text="\(tweets[indexPath.row].retweetCount)"
-        cell.FavoriateNumber.text="\(tweets[indexPath.row].favoritesCount)"
-        
+        cell.ContextLabel.text = TweetsViewController.tweets[indexPath.row].text
+        cell.nameLabel.text=TweetsViewController.tweets[indexPath.row].user?.name
+        cell.timeLabel.text=TweetsViewController.tweets[indexPath.row].timestamp
+        id1 = TweetsViewController.tweets[indexPath.row].id1
+        cell.posterImage.setImageWith((TweetsViewController.tweets[indexPath.row].user?.profileUrl)!)
+        cell.RetweetNumber.text="\(TweetsViewController.tweets[indexPath.row].retweetCount)"
+        cell.FavoriateNumber.text="\(TweetsViewController.tweets[indexPath.row].favoritesCount)"
+        cell.tweet=TweetsViewController.tweets[indexPath.row]
+        cell.rowIndex = indexPath.row
         print("row \(indexPath.row)")
         return cell
     }
     
     func refreshControlAction(refreshControl: UIRefreshControl){
         TwitterClient.sharedInstance?.homeTimeline(success: {(tweets: [Tweet]) -> () in
-            self.tweets=tweets
+            TweetsViewController.tweets=tweets
             self.tableView.reloadData()
             refreshControl.endRefreshing()
         })
@@ -121,30 +128,42 @@ class TweetsViewController: UIViewController, UITableViewDataSource, UITableView
     }
     
     
+    
+
+    
     func loadMoreData(){
         TwitterClient.sharedInstance?.homeTimeline(30,success: {(tweets: [Tweet]) -> () in
             print("30 tweets")
-            self.tweets=tweets
+            TweetsViewController.tweets=tweets
             self.tableView.reloadData()
         })
         }
     
-    func updateTableView(){
-        TwitterClient.sharedInstance?.retweet(self.id1, success: {(tweet: Tweet) -> () in
-            TwitterClient.sharedInstance?.homeTimeline(success: {(tweets: [Tweet]) -> () in
-            self.tweets=tweets
-            self.tableView.reloadData()
-            })
-        })
-    }
-    /*
+    
     // MARK: - Navigation
 
     // In a storyboard-based application, you will often want to do a little preparation before navigation
     override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
         // Get the new view controller using segue.destinationViewController.
         // Pass the selected object to the new view controller.
+        
+        
+        
+        if let detailViewController = segue.destination as? TweetDetailViewController{
+        let indexPath=tableView.indexPathForSelectedRow
+        let index=indexPath?.row
+        detailViewController.tweet = TweetsViewController.tweets[index!]
+            detailViewController.rowIndex = index
+        }
+        
+        if let composeViewController = segue.destination as? ComposeViewController{
+            if let user = User.currentUser {
+                composeViewController.profileurl = user.profileUrl
+                composeViewController.name = user.name
+            }
+        }
+        
     }
-    */
+    
 
 }

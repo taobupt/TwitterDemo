@@ -12,7 +12,10 @@ class User: NSObject {
     var name: String?
     var screenname: String?
     var profileUrl: URL?
+    var profileEnlargedUrl: URL?
     var tagline: String?
+    var friendCnt: Int?
+    var followerCnt: Int?
     
     static var _currentUser: User?
     var dictionary: NSDictionary?
@@ -20,11 +23,15 @@ class User: NSObject {
     init(dictionary: NSDictionary) {
         self.dictionary=dictionary
         name=dictionary["name"] as? String
+        friendCnt = dictionary["friends_count"] as? Int
+        followerCnt = dictionary["followers_count"] as? Int
         screenname=dictionary["screen_name"] as? String
         let profileUrlString = dictionary["profile_image_url_https"] as? String
         if let profileUrlString=profileUrlString{
             profileUrl=URL(string: profileUrlString)
+            profileEnlargedUrl = URL(string:profileUrl!.absoluteString.replacingOccurrences(of: "_normal", with: ""))
         }
+        
         tagline=dictionary["description"] as? String
         
         
@@ -32,20 +39,20 @@ class User: NSObject {
     
     class var currentUser: User? {
         get {
-            if _currentUser == nil {
+            
                 let defaults = UserDefaults.standard
                 let userData = defaults.object(forKey: "currentUserData") as? Data
                 if let userData = userData {
                     do {
                         let dictionray = try JSONSerialization.jsonObject(with: userData, options: []) as! NSDictionary
                         _currentUser=User(dictionary: dictionray)
+                        return _currentUser
                     } catch  {
                          print("error")
                     }
                     
                 }
-            }
-            return _currentUser
+            return nil
             
         }
         
